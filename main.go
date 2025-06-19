@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -102,14 +100,18 @@ func (s ParcelService) Delete(number int) error {
 	return s.store.Delete(number)
 }
 
-func main() {
-	// подключение к БД
-	rootPath, err := os.Executable()
+func dataSourceName() string {
+	/*rootPath, err := os.Executable()
 	if err != nil {
 		log.Fatal(err)
 	}
-	dbPath := filepath.Join(filepath.Dir(rootPath), DbFile)
-	db, err := sql.Open(DbDriver, dbPath)
+	return filepath.Join(filepath.Dir(rootPath), DbFile)*/
+	return DbFile
+}
+
+func main() {
+	// подключение к БД
+	db, err := sql.Open(DbDriver, dataSourceName())
 	if err != nil {
 		log.Fatal(err)
 	}
