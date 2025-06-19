@@ -3,6 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -12,6 +15,9 @@ const (
 	ParcelStatusRegistered = "registered"
 	ParcelStatusSent       = "sent"
 	ParcelStatusDelivered  = "delivered"
+
+	DbDriver = "sqlite"
+	DbFile   = "tracker.db"
 )
 
 type Parcel struct {
@@ -97,10 +103,25 @@ func (s ParcelService) Delete(number int) error {
 }
 
 func main() {
-	// настройте подключение к БД
+	// подключение к БД
+	rootPath, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+	dbPath := filepath.Join(filepath.Dir(rootPath), DbFile)
+	db, err := sql.Open(DbDriver, dbPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	store := // создайте объект ParcelStore функцией NewParcelStore
-	service := NewParcelService(store)
+	defer func() {
+		if err = db.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
+
+	store := NewParcelStore(db)        // Структура - хранилище посылок
+	service := NewParcelService(store) // Структура - сервис по работе с посылками
 
 	// регистрация посылки
 	client := 1
