@@ -7,8 +7,8 @@ import (
 
 const (
 	addParcelQuery            = `INSERT INTO parcel (client, status, address, created_at) VALUES (:client, :status, :address, :createdAt)`
-	getParcelByNumberQuery    = `SELECT client, status, address, created_at FROM parcel WHERE number = :number`
-	getParcelByClientQuery    = `SELECT client, status, address, created_at FROM parcel WHERE client = :client`
+	getParcelByNumberQuery    = `SELECT number, client, status, address, created_at FROM parcel WHERE number = :number`
+	getParcelByClientQuery    = `SELECT number, client, status, address, created_at FROM parcel WHERE client = :client`
 	setAddressQuery           = `UPDATE parcel SET address = :newAddress WHERE number = :number AND status = :statusRegistered`
 	setStatusQuery            = `UPDATE parcel SET status = :newStatus WHERE number = :number`
 	deleteParcelByNumberQuery = `DELETE from parcel WHERE number = :number AND status = :statusRegistered`
@@ -66,18 +66,20 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 	)
 
 	var (
+		id        int
 		client    int
 		status    string
 		address   string
 		createdAt string
 	)
 
-	err := row.Scan(&client, &status, &address, &createdAt)
+	err := row.Scan(&id, &client, &status, &address, &createdAt)
 	if err != nil {
 		return Parcel{}, fmt.Errorf("ошибка при чтении записи: %w", err)
 	}
 
 	p := Parcel{
+		Number:    id,
 		Client:    client,
 		Status:    status,
 		Address:   address,
@@ -109,13 +111,14 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	var res []Parcel
 	for rows.Next() {
 		var (
+			number    int
 			client    int
 			status    string
 			address   string
 			createdAt string
 		)
 
-		err := rows.Scan(&client, &status, &address, &createdAt)
+		err := rows.Scan(&number, &client, &status, &address, &createdAt)
 		if err != nil {
 			return nil, fmt.Errorf("ошибка при чтении записи: %w", err)
 		}
@@ -123,6 +126,7 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 		res = append(
 			res,
 			Parcel{
+				Number:    number,
 				Client:    client,
 				Status:    status,
 				Address:   address,
