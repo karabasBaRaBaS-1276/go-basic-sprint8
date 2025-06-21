@@ -62,14 +62,12 @@ func TestAddGetDelete(t *testing.T) {
 	// add
 	testParcel := getTestParcel()
 	number := add(t, store, testParcel)
+	testParcel.Number = number
 
 	// get
 	p, err := store.Get(number)
 	assert.NoError(t, err, "Нет ошибок при получении информации о посылке")
-	assert.Equal(t, testParcel.Client, p.Client, "Значение клиента совпадает")
-	assert.Equal(t, testParcel.Address, p.Address, "Значение адреса совпадает")
-	assert.Equal(t, testParcel.Status, p.Status, "Значение статуса совпадает")
-	assert.Equal(t, testParcel.CreatedAt, p.CreatedAt, "Значение даты создания совпадает")
+	assert.EqualValues(t, testParcel, p, "Значения полей в посылке совпадают с ожидаемыми")
 
 	// delete
 	delete(t, store, number)

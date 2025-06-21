@@ -39,12 +39,12 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 		sql.Named("createdAt", p.CreatedAt),
 	)
 	if err != nil {
-		return 0, fmt.Errorf("ошибка при добавлении записи: %w", err)
+		return 0, fmt.Errorf("failed to add record: %w", err)
 	}
 
 	number, err := result.LastInsertId()
 	if err != nil {
-		return 0, fmt.Errorf("ошибка при добавлении записи: %w", err)
+		return 0, fmt.Errorf("failed to add record: %w", err)
 	}
 
 	return int(number), nil
@@ -56,8 +56,8 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 //   - ошибка, если что-то пошло не так. (error)
 func (s ParcelStore) Get(number int) (Parcel, error) {
 
-	if number == 0 {
-		return Parcel{}, fmt.Errorf("ошибка при чтении записи: недопустимое значение id посылки (%d)", number)
+	if number <= 0 {
+		return Parcel{}, fmt.Errorf("failed to read record: invalid parcel id (%d)", number)
 	}
 
 	row := s.db.QueryRow(
@@ -75,7 +75,7 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 
 	err := row.Scan(&id, &client, &status, &address, &createdAt)
 	if err != nil {
-		return Parcel{}, fmt.Errorf("ошибка при чтении записи: %w", err)
+		return Parcel{}, fmt.Errorf("failed to read record: %w", err)
 	}
 
 	p := Parcel{
@@ -96,7 +96,7 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 
 	if client == 0 {
-		return nil, fmt.Errorf("ошибка при поиске списка посылок по клиенту: недопустимое значение клиента (%d)", client)
+		return nil, fmt.Errorf("failed to find parcels by client: invalid client id (%d)", client)
 	}
 
 	rows, err := s.db.Query(
@@ -104,7 +104,7 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 		sql.Named("client", client),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка при поиске списка посылок по клиенту: %w", err)
+		return nil, fmt.Errorf("failed to find parcels by client: %w", err)
 	}
 	defer rows.Close()
 
@@ -120,7 +120,7 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 
 		err := rows.Scan(&number, &client, &status, &address, &createdAt)
 		if err != nil {
-			return nil, fmt.Errorf("ошибка при чтении записи: %w", err)
+			return nil, fmt.Errorf("failed to read record: %w", err)
 		}
 
 		res = append(
@@ -137,7 +137,7 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("ошибка при поиске списка посылок по клиенту: %w", err)
+		return nil, fmt.Errorf("failed to find parcels by client: %w", err)
 	}
 
 	return res, nil
@@ -153,10 +153,10 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 func (s ParcelStore) SetStatus(number int, status string) error {
 
 	if status == "" {
-		return fmt.Errorf("ошибка при изменении статуса: статус не может быть пустым")
+		return fmt.Errorf("failed to change status: status cannot be empty")
 	}
-	if number == 0 {
-		return fmt.Errorf("ошибка при изменении статуса: недопустимое значение id посылки (%d)", number)
+	if number <= 0 {
+		return fmt.Errorf("failed to change status: invalid parcel id (%d)", number)
 	}
 
 	result, err := s.db.Exec(
@@ -165,16 +165,16 @@ func (s ParcelStore) SetStatus(number int, status string) error {
 		sql.Named("number", number),
 	)
 	if err != nil {
-		return fmt.Errorf("ошибка при изменении статуса: %w", err)
+		return fmt.Errorf("failed to change status: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("ошибка при изменении статуса: %w", err)
+		return fmt.Errorf("failed to change status: %w", err)
 	}
 
 	if rowsAffected != 1 {
-		return fmt.Errorf("ошибка при изменении статуса: ожидалось обновить 1 запись, но обновлено %d", rowsAffected)
+		return fmt.Errorf("failed to change status: expected to update 1 record, but updated %d", rowsAffected)
 	}
 
 	return nil
@@ -190,10 +190,10 @@ func (s ParcelStore) SetStatus(number int, status string) error {
 func (s ParcelStore) SetAddress(number int, address string) error {
 
 	if address == "" {
-		return fmt.Errorf("ошибка при изменении адреса: адрес не может быть пустым")
+		return fmt.Errorf("failed to change address: address cannot be empty")
 	}
-	if number == 0 {
-		return fmt.Errorf("ошибка при изменении адреса: недопустимое значение id посылки (%d)", number)
+	if number <= 0 {
+		return fmt.Errorf("failed to change address: invalid parcel id (%d)", number)
 	}
 
 	result, err := s.db.Exec(
@@ -204,16 +204,16 @@ func (s ParcelStore) SetAddress(number int, address string) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("ошибка при изменении адреса: %w", err)
+		return fmt.Errorf("failed to change address: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("ошибка при изменении адреса: %w", err)
+		return fmt.Errorf("failed to change address: %w", err)
 	}
 
 	if rowsAffected != 1 {
-		return fmt.Errorf("ошибка при изменении адреса: ожидалось обновить 1 запись, но обновлено %d", rowsAffected)
+		return fmt.Errorf("failed to change address: expected to update 1 record, but updated %d", rowsAffected)
 	}
 
 	return nil
@@ -225,8 +225,8 @@ func (s ParcelStore) SetAddress(number int, address string) error {
 func (s ParcelStore) Delete(number int) error {
 	// реализуйте удаление строки из таблицы parcel
 	// удалять строку можно только если значение статуса registered
-	if number == 0 {
-		return fmt.Errorf("ошибка при удалении записи: недопустимое значение number посылки (%d)", number)
+	if number <= 0 {
+		return fmt.Errorf("failed to delete record: invalid parcel id (%d)", number)
 	}
 
 	result, err := s.db.Exec(
@@ -236,16 +236,16 @@ func (s ParcelStore) Delete(number int) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("ошибка при удалении записи: %w", err)
+		return fmt.Errorf("failed to delete record: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("ошибка при удалении записи: %w", err)
+		return fmt.Errorf("failed to delete record: %w", err)
 	}
 
 	if rowsAffected != 1 {
-		fmt.Printf("ошибка при удалении записи: ожидалось удаление 1 записи, но удалено %d\n", rowsAffected)
+		fmt.Printf("failed to delete record: expected to delete 1 row, but deleted %d\n", rowsAffected)
 	}
 
 	return nil
